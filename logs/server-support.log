@@ -1,0 +1,4 @@
+gcc -I/opt/ASCL/include/ -I/opt/renewability/headers/client -I/opt/renewability/headers/server -I/opt/3rd_party/curl/serverlinux/include/ -I/opt/3rd_party/libwebsockets/serverlinux/include/ -I/opt/3rd_party/openssl/serverlinux/include -I/usr/include/mysql -Wall -g -Os -fpic -c renewability_manager.c
+gcc -I/opt/ASCL/include/ -I/opt/renewability/headers/client -I/opt/renewability/headers/server -I/opt/3rd_party/curl/serverlinux/include/ -I/opt/3rd_party/libwebsockets/serverlinux/include/ -I/opt/3rd_party/openssl/serverlinux/include -I/usr/include/mysql -Wall -g -Os -fpic -c nodes.c
+cp /opt/ASCL/obj/serverlinux/ascl.o .
+gcc -o renewability_manager renewability_manager.o ascl.o nodes.o -static -L. -L/opt/3rd_party/curl/serverlinux/lib/ -L/opt/3rd_party/libwebsockets/serverlinux/lib/ -L/opt/3rd_party/openssl/serverlinux/lib/ -L/opt/ASCL/obj/serverlinux/ -L/opt/renewability/obj/serverlinux  -lwebsockets -lmysqlclient -lz -lm -lpthread -ldl

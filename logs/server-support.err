@@ -1,0 +1,20 @@
+renewability_manager.c: In function ‘checkPoliciesAndQueryClients’:
+renewability_manager.c:258:19: warning: unused variable ‘last_update_time’ [-Wunused-variable]
+In file included from renewability_manager.h:18:0,
+                 from renewability_manager.c:1:
+renewability_manager.c: At top level:
+nodes.h:34:25: warning: ‘active_applications’ defined but not used [-Wunused-variable]
+/usr/lib/gcc/x86_64-linux-gnu/4.7/../../../x86_64-linux-gnu/libmysqlclient.a(client_plugin.c.o): In function `mysql_load_plugin_v':
+(.text+0x473): warning: Using 'dlopen' in statically linked applications requires at runtime the shared libraries from the glibc version used for linking
+/opt/3rd_party/libwebsockets/serverlinux/lib//libwebsockets.a(lws-plat-unix.c.o): In function `lws_plat_drop_app_privileges':
+/home/aspire/repositories/framework/development/3rd_party/libwebsockets/libwebsockets-1.5-chrome47-firefox41/lib/lws-plat-unix.c:260: warning: Using 'initgroups' in statically linked applications requires at runtime the shared libraries from the glibc version used for linking
+/usr/lib/gcc/x86_64-linux-gnu/4.7/../../../x86_64-linux-gnu/libmysqlclient.a(mf_pack.c.o): In function `unpack_dirname':
+(.text+0x5a6): warning: Using 'getpwnam' in statically linked applications requires at runtime the shared libraries from the glibc version used for linking
+/opt/3rd_party/libwebsockets/serverlinux/lib//libwebsockets.a(lws-plat-unix.c.o): In function `lws_plat_drop_app_privileges':
+/home/aspire/repositories/framework/development/3rd_party/libwebsockets/libwebsockets-1.5-chrome47-firefox41/lib/lws-plat-unix.c:257: warning: Using 'getpwuid' in statically linked applications requires at runtime the shared libraries from the glibc version used for linking
+/usr/lib/gcc/x86_64-linux-gnu/4.7/../../../x86_64-linux-gnu/libmysqlclient.a(mf_pack.c.o): In function `unpack_dirname':
+(.text+0x5b2): warning: Using 'endpwent' in statically linked applications requires at runtime the shared libraries from the glibc version used for linking
+/opt/3rd_party/libwebsockets/serverlinux/lib//libwebsockets.a(libwebsockets.c.o): In function `libwebsockets_get_addresses':
+/home/aspire/repositories/framework/development/3rd_party/libwebsockets/libwebsockets-1.5-chrome47-firefox41/lib/libwebsockets.c:371: warning: Using 'getaddrinfo' in statically linked applications requires at runtime the shared libraries from the glibc version used for linking
+/usr/lib/gcc/x86_64-linux-gnu/4.7/../../../x86_64-linux-gnu/libmysqlclient.a(libmysql.c.o): In function `mysql_server_init':
+(.text+0x2265): warning: Using 'getservbyname' in statically linked applications requires at runtime the shared libraries from the glibc version used for linking

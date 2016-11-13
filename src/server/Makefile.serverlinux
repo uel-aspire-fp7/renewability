@@ -1,0 +1,42 @@
+CC=gcc
+
+PLATFORM=serverlinux
+THIRD_PARTY=/opt/3rd_party
+
+INCLUDES_PATHS=-I/opt/ASCL/include/ \
+    -I/opt/renewability/headers/client \
+    -I/opt/renewability/headers/server \
+	-I$(THIRD_PARTY)/curl/$(PLATFORM)/include/ \
+	-I$(THIRD_PARTY)/libwebsockets/$(PLATFORM)/include/ \
+	-I$(THIRD_PARTY)/openssl/$(PLATFORM)/include \
+	-I/usr/include/mysql
+
+LIBRARIES_PATHS=-L. \
+	-L$(THIRD_PARTY)/curl/$(PLATFORM)/lib/ \
+	-L$(THIRD_PARTY)/libwebsockets/$(PLATFORM)/lib/ \
+	-L$(THIRD_PARTY)/openssl/$(PLATFORM)/lib/ \
+	-L/opt/ASCL/obj/$(PLATFORM)/ \
+	-L/opt/renewability/obj/$(PLATFORM) \
+
+CFLAGS=-Wall \
+	-g \
+	-Os \
+	-fpic
+
+LIBRARIES=-lwebsockets -lmysqlclient -lz -lm -lpthread -ldl
+
+all: renewability_manager.o nodes.o ascl.o
+	$(CC) -o renewability_manager renewability_manager.o ascl.o nodes.o -static $(LIBRARIES_PATHS) $(LIBRARIES)
+
+ascl.o:
+	cp /opt/ASCL/obj/$(PLATFORM)/ascl.o .
+
+%.o: %.c
+	$(CC) $(INCLUDES_PATHS) $(CFLAGS) -c $<
+
+clean:
+	rm *.o *.log *.a -f
+
+test: clean all
+	clear
+	./renewability_manager

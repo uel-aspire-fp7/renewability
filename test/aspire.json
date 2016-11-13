@@ -1,0 +1,419 @@
+// ACTC 2.8.0
+//
+// Note:
+// - "excluded": true/false [false]
+//   if true, step is excluded from toolchain --> no output folder is created
+//   use this field to start toolchain from any step
+//
+// - "traverse": true/false [false]
+//   if true, input files are copied to output folder without any change
+//
+{
+
+  // Target platforms:
+  // - linux [default]
+  // - android
+  "platform" :                "android",
+
+  // Tools
+  "tools": {
+    // libraries
+    "third_party":            "/opt/3rd_party",
+    // src2src
+    "annotation_reader":      ["perl",
+                                "/opt/wbc/annotation_reader.prl"],
+    "config":                 "/opt/wbc/config.x",
+    "wbta":                   ["python",
+                                "/opt/wbc/wbta/Wbta.py"],
+    "convert_pragmas":        ["python",
+                                "/opt/wbc/convert_pragmas.py"],
+    "wbc":                    "/opt/wbc/wbc.x",
+    "read_annot":             "/opt/annotation_extractor/readAnnot.sh",
+    "data_obfuscate":         "/opt/data_obfuscator/scripts/data_obfuscate.sh",
+    "client_server_splitter": "/opt/client_server_splitter",
+    "csurf":                  "/opt/codesurfer/csurf/bin/csurf",
+    "codeguard":              "/opt/codeguard/codeguard.py",
+    "anti_cloning":           "/opt/anti_cloning/annotation/replace.sh",
+    "attestator_selector":    "/opt/RA/attestator_selector.sh",
+    "reaction_unit":          "/opt/reaction_unit/script/replace.sh",
+    "dcl":                    "/opt/dcl",
+    "cft":                    "/opt/cf_tagging/cf_tagging.py",
+    // src2bin
+    "frontend":               "/opt/diablo-android-gcc-toolchain/bin/arm-linux-androideabi-gcc",
+    // bin2bin
+    "extractor":              "/opt/diablo/bin/diablo-extractor",
+    "xtranslator":            "/opt/xtranslator/xtranslator",
+    "code_mobility":          "/opt/code_mobility",
+    "accl":                   "/opt/ACCL",
+    "ascl":                   "/opt/ASCL",
+    "anti_debugging":         "/opt/anti_debugging",
+    "obfuscator":             "/opt/diablo/bin/diablo-obfuscator",
+    "obfuscator_sp":          "/opt/diablo/bin/diablo-selfprofiling",
+    "renewability":           "/opt/renewability"
+  },
+
+  // Source-level Tool chain
+  "src2src": {
+    "excluded": false,
+
+    // Source code annotation
+    "SLP01": {
+      "excluded":               false,
+      "traverse":               false,
+      "annotations_patch":      "",
+      "external_annotations":   "",
+      "source"  : ["src/*.c",
+                   "src/*.h"]
+    },
+
+    // white-box crypto
+    "SLP03": {
+      "excluded": false,
+      "traverse": false,
+      "renewability_script": true,
+      // WBC seed (random, aid, none)
+      "seed": "none",
+ 
+      // WBC annotation extraction tool
+      "_01": {
+        "excluded": false
+      },
+ 
+      // White-Box Tool python
+      "_02": {
+        "excluded": false
+      },
+
+      // WBC header inclusion
+      "_03": {
+        "excluded": false
+      },
+
+      // preprocessor
+      "_04": {
+        "excluded": false
+      },
+
+      // WBC source rewriting tool
+      "_05": {
+        "excluded": false,
+        "options":  ["-size 2000MB"]
+      }
+    },
+
+    // preprocessor
+    "SLP02": {
+      "excluded": false
+    },
+
+    // data hiding
+    "SLP05": {
+      "excluded": false,
+      "traverse": false,
+
+      // source code analysis
+      "_01": {
+        "excluded": false,
+        "options" : []
+      },
+
+      // data obfuscation
+      "_02": {
+        "excluded": false,
+        "options" : []
+      }
+    },
+
+    // client server clode splitting
+    "SLP06": {
+      "excluded": false,
+      "traverse": true,
+    
+      // Process
+      "_01": {
+        "excluded": false,
+        "options" : []
+      },
+    
+      // CSurf
+      "_02": {
+        "excluded": false
+      },
+    
+      // Code transformation
+      "_03": {
+        "excluded": false
+      }
+    },
+    
+    // annotation extraction + external annotation file(s)
+    "SLP04": {
+      "excluded": false,
+      "options" : [],
+      "external": []
+    },
+
+    // code guard
+    "SLP08": {
+      "excluded": false,
+      "traverse": false,
+      "options" : []
+    },
+
+    // anti-cloning
+    "SLP09": {
+      "excluded": false,
+      "traverse": false,
+      "options" : []
+    },
+
+    // remote attestation
+    "SLP07": {
+      "excluded": true,
+      "options" : []
+    },
+
+    // reaction unit
+    "SLP10": {
+      "excluded": false,
+      "traverse": false,
+      "options" : []
+    },
+
+    // diversified crypto library
+    // only applicable for ANDROID platform
+    "SLP11": {
+      "excluded": false,
+      "traverse": true,
+      "options" : []
+    },
+
+    // control flow tagging
+    "SLP12": {
+      "excluded": false,
+      "traverse": true,
+      "options" : []
+    }
+  },
+
+  // Assembler, Compiler, Linker
+  "src2bin": {
+  "excluded": false,
+    // Common options for all tools
+    "options"      : [],
+
+    "PREPROCESS": {
+      // -I <dir>
+      // -isystem <dir>
+      // -include <file>
+      // -D<macro[=defn]>
+      "options"    : ["-DANDROID"]
+    },
+
+    // .c, .cpp
+    "COMPILE": {
+      "options"    : ["-Os",
+                      "-W",
+                      "-Wa,--noexecstack",
+                      "-Wall",
+                      "-Werror=address",
+                      "-Werror=format-security",
+                      "-Werror=non-virtual-dtor",
+                      "-Werror=return-type",
+                      "-Werror=sequence-point",
+                      "-Winit-self",
+                      "-Wno-multichar",
+                      "-Wno-psabi",
+                      "-Wno-unused",
+                      "-Wno-unused-but-set-variable",
+                      "-Wpointer-arith",
+                      "-Wsign-promo",
+                      "-Wstrict-aliasing=2",
+                      "-fPIE",
+                      "-fdata-sections",
+                      "-ffunction-sections",
+                      "-fgcse-after-reload",
+                      "-fmessage-length=0",
+                      "-fno-builtin-sin",
+                      "-fno-exceptions",
+                      "-fno-short-enums",
+                      "-fno-strict-aliasing",
+                      "-fno-strict-volatile-bitfields",
+                      "-fomit-frame-pointer",
+                      "-fpic",
+                      "-frename-registers",
+                      "-frerun-cse-after-loop",
+                      "-fstack-protector",
+                      "-funwind-tables",
+                      "-march=armv7-a",
+                      "-marm",
+                      "-mfloat-abi=softfp",
+                      "-mfpu=neon",
+                      "-msoft-float",
+                      "-mthumb-interwork",
+                      "-DACCL_WS_ASPIRE_PORTAL_HOST=192.168.1.141",
+                      "-DAPPLY_RENEWABILITY"],
+      "options_c"  : ["-std=c99"],
+      "options_cpp": ["-fno-rtti",
+                      "-fvisibility-inlines-hidden"]
+    },
+
+    // accl.c
+    "COMPILE_ACCL": {
+      "protocol"    : "http",
+      "endpoint"    : "192.168.1.141",
+      "port"        : "8088",
+      "file_path"   : "/data"
+    },
+
+    // Linker
+    "LINK": {
+      "options"    : ["--sysroot=/opt/diablo-android-gcc-toolchain/sysroot",
+                      "-L/opt/diablo-android-gcc-toolchain/sysroot/usr/lib/",
+                      "-Wl,--fatal-warnings",
+                      "-Wl,--fix-cortex-a8",
+                      "-Wl,--hash-style=sysv",
+                      "-Wl,--no-demangle",
+                      "-Wl,--no-merge-exidx-entries",
+                      "-Wl,--no-undefined",
+                      "-Wl,--warn-shared-textrel",
+                      "-Wl,-fuse-ld=bfd"],
+      // basename of linked file
+      //   if empty, default value computed from options:
+      //   "liba.so" if "-shared" else "a.out"
+      "binary"     : "rntest"
+    }
+  },
+
+  // Binary Rewriting Tool Chain
+  "bin2bin": {
+    "excluded": false,
+
+    // bytecode diversity seed, integer or RANDOM
+    "bytecode_diversity_seed"     : "0",
+    "code_mobility_diversity_seed": "0",
+
+    // vanilla self-profiling
+    "BLP00": {
+      "excluded": false,
+    
+
+      // generate vanilla self-profiling binary
+      "_01": {
+        "excluded": false,
+        "options" : []
+      },
+    
+      // collect execution profile on target board
+      "_02": {
+        "excluded": false,
+        "script" : ""
+      },
+    
+      // recompile using execution profile and calculate dynamic metrics
+      "_03": {
+        "excluded": false,
+        "options" : []
+      }
+    },
+    
+    // Native Code Extraction
+    "BLP01": {
+      "excluded": false,
+      "traverse": false,
+      "options" : []
+    },
+
+    // Bytecode Generation
+    "BLP02": {
+      "excluded": false,
+      "options" : []
+    },
+
+    // Code Integration
+    "BLP03": {
+      "excluded": false,
+      "options" : []
+    },
+
+    // Binary Code Control Flow Obfuscation
+    "BLP04": {
+      "excluded"        : false,
+      "options"         : [],
+      "self-profiling"  : false,
+      "runtime_profiles": false,
+      "anti_debugging"  : true,
+      "obfuscations"    : true,
+      "call_stack_check": true,
+      "softvm"          : true,
+      "code_mobility"   : true
+    },
+
+    // Generate dynamic metrics using diablo obfuscator
+    "BLP04_DYN": {
+      "excluded": false,
+
+      // collect execution profile on target board
+      "_01": {
+        "excluded": false,
+        "options" : "",
+        "script" : ""
+      },
+    
+      // recompile using execution profile and calculate dynamic metrics
+      "_02": {
+        "excluded": true,
+        "options" : ""
+      }
+    }
+  },
+    
+  // Server side management
+  "SERVER": {
+    "excluded"   : false,
+    "ip_address" : "127.0.0.1",
+
+    // Code Splitting
+    "P10": {
+      "script": "/opt/code_mobility/deploy_application.sh"},
+
+    // Code Mobility
+    "P20": {
+      "script": "/opt/code_mobility/deploy_application.sh"},
+
+    // Remote Attestation
+    "P80": {
+      "script": "/opt/RA/deploy/deploy.sh"},
+    
+    // Renewability
+    "RENEWABILITY": {
+      "excluded"              : false,
+      "new_application_script": "/opt/renewability/scripts/create_new_application.sh",
+      "set_policy_script"     : "/opt/renewability/scripts/set_application_policy.sh",
+      "revision_duration"     : "10",
+      "timeout_mandatory"     : false
+    }
+  },
+
+  // Metric collection
+  "METRICS": {
+    "excluded" : false,
+    "files"    : {
+        "BC02_SP"          : ["*.stat_complexity_info"],
+        "BC02_SP/profiles" : ["*.plaintext"],
+        "BC02_DYN"         : ["*.dynamic_complexity_info"],
+        "BC05"             : ["*.stat_complexity_info",
+                           "*.stat_regions_complexity_info"],
+        "BC05/profiles"    : ["*.plaintext"],
+        "BC05_DYN"         : ["*.dynamic_complexity_info"]
+    }
+  },
+
+  // Post-processing
+  "POST": {
+    // Short description in ACTC trace
+    "brief": "",
+    // Command line arguments
+    "args" : ""
+  }
+}
