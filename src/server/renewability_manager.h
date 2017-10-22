@@ -32,7 +32,7 @@
 #define RN_INFO								1
 #define RN_ERROR							2
 
-#define RENEWABILITY_MANAGER_LOG_FILE        "/opt/renewability/logs/renewability_manager.log"
+#define RENEWABILITY_MANAGER_LOG_FILE        "/opt/online_backends/renewability/renewability_manager.log"
 #define RENEWABILITY_GENERATION_SCRIPT       "/opt/renewability/scripts/create_new_revision.sh"
 #define RENEWABILITY_REVISION_PATH           "/opt/online_backends/%s/code_mobility/%s"
 
