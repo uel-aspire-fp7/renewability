@@ -14,6 +14,9 @@ cd $build_dir
 ln -s $repo_dir/scripts/ $build_dir
 ln -s $repo_dir/setup/ $build_dir
 
+# Create directory on online_backends
+mkdir -p /opt/online_backends/renewability/
+
 echo "Copying headers files to headers/..."
 
 mkdir -p ${build_dir}/headers/{client,server}
