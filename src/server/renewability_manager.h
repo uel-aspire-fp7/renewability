@@ -9,7 +9,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <ctype.h>
-#include <mysql.h>
+#include <mysql/mysql.h>
 #include <libwebsockets.h>
 #include <ascl.h>
 #include <renewability.h>
