@@ -17,7 +17,7 @@
 #include <dirent.h>
 #include "nodes.h"
 
-#define RENEWABILITY_DB_HOST                "localhost"
+#define RENEWABILITY_DB_HOST                "mysql"
 #define RENEWABILITY_DB_USER                "rn_user"
 #define RENEWABILITY_DB_PASS                "rn_password"
 #define RENEWABILITY_DB_NAME                "RN_development"
