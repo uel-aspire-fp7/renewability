@@ -6,10 +6,6 @@ THIRD_PARTY=/opt/3rd_party
 INCLUDES_PATHS=-I/opt/ASCL/include/ \
     -I/opt/renewability/headers/client \
     -I/opt/renewability/headers/server \
-	-I$(THIRD_PARTY)/libwebsockets/$(PLATFORM)/include/ \
-
-LIBRARIES_PATHS=-L. \
-	-L$(THIRD_PARTY)/libwebsockets/$(PLATFORM)/lib/ \
 
 CFLAGS=-Wall \
 	-g \
@@ -19,7 +15,7 @@ CFLAGS=-Wall \
 LIBRARIES=-lwebsockets -lmysqlclient -lz -lm -lpthread -ldl
 
 all: renewability_manager.o nodes.o ascl.o
-	$(CC) -o renewability_manager renewability_manager.o ascl.o nodes.o -static $(LIBRARIES_PATHS) $(LIBRARIES)
+	$(CC) -o renewability_manager renewability_manager.o ascl.o nodes.o $(LIBRARIES)
 
 ascl.o:
 	cp /opt/ASCL/obj/$(PLATFORM)/ascl.o .
