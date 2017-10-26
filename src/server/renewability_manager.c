@@ -203,7 +203,7 @@ renewability_policy* getApplicationPolicy(MYSQL *con, char application_id[AIDL])
 /**
  * Requests a block renewal to a given application
  */
-bool queryClient (rn_manager_node* application, struct libwebsocket_context* ws_context) {
+bool queryClient (rn_manager_node* application, struct lws_context* ws_context) {
     rn_message* message;
     rn_renewblock* renewblock;
 //    char response[512];
@@ -252,7 +252,7 @@ bool queryClient (rn_manager_node* application, struct libwebsocket_context* ws_
  * Loops through the active applications list, checks policies and queries clients
  * when an upgrade is needed
  */
-bool checkPoliciesAndQueryClients(MYSQL *con, struct libwebsocket_context* ws_context) {
+bool checkPoliciesAndQueryClients(MYSQL *con, struct lws_context* ws_context) {
     renewability_policy* policy = NULL;
     rn_manager_node* app_iterator = getFirstActiveApplication();
     unsigned long last_update_time = 0, current_time = 0;
@@ -334,7 +334,7 @@ bool checkPoliciesAndQueryClients(MYSQL *con, struct libwebsocket_context* ws_co
  * Renewability
  */
 int main (int argc, char** argv) {
-    struct libwebsocket_context* ws_context;
+    struct lws_context* ws_context;
     MYSQL *con = mysql_init(NULL);
 
     renewabilityLog("Starting manager...", RN_DEBUG);
@@ -367,7 +367,7 @@ int main (int argc, char** argv) {
             checkPoliciesAndQueryClients(con, ws_context);
 
             // library service (read/write callbacks) routine
-            libwebsocket_service(ws_context, 1000);   // 1000ms timeout
+            lws_service(ws_context, 1000);   // 1000ms timeout
         }
 
         renewabilityLog("Shutting down manager.", RN_DEBUG);
