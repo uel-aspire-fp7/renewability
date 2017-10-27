@@ -14,9 +14,6 @@ usage () {
 set -o errexit
 set -o pipefail
 
-ROOT_USER=root
-ROOT_PWD=aspire
-
 MANDATORY=0
 
 while getopts "o:a:r:f:t:h" OPT
@@ -95,7 +92,8 @@ if [ $? -ne 0 ]; then
     exit 7
 else
     # inserts a revision record in DB
-    echo $REVISION_QUERY | mysql -u${ROOT_USER} -p${ROOT_PWD}
+    local_dir=$(dirname $0)
+    echo $REVISION_QUERY | mysql --defaults-file=$local_dir/mysql.cnf
 
     if [ $? -ne 0 ]; then
         echo "ERROR while inserting revision."

@@ -15,9 +15,6 @@ usage () {
 set -o errexit
 set -o pipefail
 
-ROOT_USER=root
-ROOT_PWD=aspire
-
 MANDATORY=0
 
 while getopts "a:d:r:m:h" OPT
@@ -61,7 +58,8 @@ fi
 
 POLICY_QUERY="USE RN_development; REPLACE INTO rn_application_policy (application_id, revisions_duration, timeout_mandatory, diversification_script) VALUES ('"${APPLICATION_ID}"', ${DURATION}, ${MANDATORY}, '"${DIVERSIFICATION_SCRIPT}"');"
 
-echo $POLICY_QUERY | mysql -u${ROOT_USER} -p${ROOT_PWD}
+local_dir=$(dirname $0)
+echo $POLICY_QUERY | mysql --defaults-file=$local_dir/mysql.cnf
 
 if [ $? -ne 0 ]; then
     echo "ERROR while setting policy."

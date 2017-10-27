@@ -1,0 +1,4 @@
+[client]
+host     = mysql
+user     = rn_user
+password = rn_password

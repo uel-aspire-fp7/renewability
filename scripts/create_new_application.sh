@@ -11,9 +11,6 @@ usage () {
 set -o errexit
 set -o pipefail
 
-ROOT_USER=root
-ROOT_PWD=aspire
-
 DESCRIPTION=""
 
 while getopts "a:d:h" OPT
@@ -38,7 +35,8 @@ fi
 
 APPLICATION_QUERY="USE RN_development; REPLACE INTO rn_application (application_id, description) VALUES ('"${APPLICATION_ID}"', '"${DESCRIPTION}"');"
 
-echo $APPLICATION_QUERY | mysql -u${ROOT_USER} -p${ROOT_PWD}
+local_dir=$(dirname $0)
+echo $APPLICATION_QUERY | mysql --defaults-file=$local_dir/mysql.cnf
 
 if [ $? -ne 0 ]; then
     echo "ERROR while inserting application."
