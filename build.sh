@@ -35,16 +35,3 @@ for PLATFORM in linux android serverlinux; do
     mkdir -p ${build_dir}/obj/${PLATFORM}
     mv ${repo_dir}/src/client/renewability.{a,o} ${build_dir}/obj/${PLATFORM}
 done
-
-echo "Building server-side support..."
-MANAGER_PLATFORM=serverlinux
-
-cd ${repo_dir}/src/server
-make -f Makefile.${MANAGER_PLATFORM} clean && make -f Makefile.${MANAGER_PLATFORM} ASCL=/opt/ASCL > ${build_dir}/logs/server-support.log 2> ${build_dir}/logs/server-support.err
-
-echo "Copying renewability_manager to obj/..."
-
-mkdir -p ${build_dir}/obj/${MANAGER_PLATFORM}
-mv ${repo_dir}/src/server/renewability_manager ${build_dir}/obj/${MANAGER_PLATFORM}
-
-echo "Done. For additional info, please refer to {client,server}-support.{log,err}."

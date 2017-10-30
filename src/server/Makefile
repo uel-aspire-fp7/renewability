@@ -1,8 +1,8 @@
 CC=gcc
 
 INCLUDES_PATHS=-I/opt/ASCL/include/ \
-    -I/opt/renewability/headers/client \
-    -I/opt/renewability/headers/server \
+    -I$(SRCDIR)/client \
+    -I$(SRCDIR)/server \
 
 CFLAGS=-Wall \
 	-g \
@@ -15,7 +15,7 @@ all: renewability_manager.o nodes.o ascl.o
 	$(CC) -o renewability_manager renewability_manager.o ascl.o nodes.o $(LIBRARIES)
 
 ascl.o:
-	cp $(ASCL)/obj/serverlinux/ascl.o .
+	cp $(ASCL)/obj/ascl.o .
 
 %.o: %.c
 	$(CC) $(INCLUDES_PATHS) $(CFLAGS) -c $<
