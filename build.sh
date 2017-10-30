@@ -40,7 +40,7 @@ echo "Building server-side support..."
 MANAGER_PLATFORM=serverlinux
 
 cd ${repo_dir}/src/server
-make -f Makefile.${MANAGER_PLATFORM} clean && make -f Makefile.${MANAGER_PLATFORM} > ${build_dir}/logs/server-support.log 2> ${build_dir}/logs/server-support.err
+make -f Makefile.${MANAGER_PLATFORM} clean && make -f Makefile.${MANAGER_PLATFORM} ASCL=/opt/ASCL > ${build_dir}/logs/server-support.log 2> ${build_dir}/logs/server-support.err
 
 echo "Copying renewability_manager to obj/..."
 

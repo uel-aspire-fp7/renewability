@@ -1,8 +1,5 @@
 CC=gcc
 
-PLATFORM=serverlinux
-THIRD_PARTY=/opt/3rd_party
-
 INCLUDES_PATHS=-I/opt/ASCL/include/ \
     -I/opt/renewability/headers/client \
     -I/opt/renewability/headers/server \
@@ -18,7 +15,7 @@ all: renewability_manager.o nodes.o ascl.o
 	$(CC) -o renewability_manager renewability_manager.o ascl.o nodes.o $(LIBRARIES)
 
 ascl.o:
-	cp /opt/ASCL/obj/$(PLATFORM)/ascl.o .
+	cp $(ASCL)/obj/serverlinux/ascl.o .
 
 %.o: %.c
 	$(CC) $(INCLUDES_PATHS) $(CFLAGS) -c $<
