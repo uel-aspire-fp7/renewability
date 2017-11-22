@@ -1,4 +1,8 @@
 #!/bin/bash
+set -o errexit
+set -o pipefail
+set -o nounset
+#set -o xtrace
 
 usage () {
     echo "USAGE: $0 -a ASPIRE_APPLICATION_ID -r REVISION_NUMBER -o DIVERSIFICATION_SCRIPT -f APPLY_FROM -t APPLY_TO";
@@ -45,11 +49,6 @@ done
 #    exit 1
 #fi
 
-if [ ! -f ${UPDATE_BLOCKS_SCRIPT} ]; then
-    echo "DIVERSIFICATION_SCRIPT '${UPDATE_BLOCKS_SCRIPT}' not found. No such file or directory. Use $0 -h for help."
-    exit 1
-fi
-
 if [ -z ${APPLICATION_ID+x} ]; then
     echo "ASPIRE_APPLICATION_ID not specified. Use $0 -h for help."
     exit 2
@@ -84,8 +83,8 @@ REVISION_QUERY="USE RN_development; INSERT INTO rn_revision (application_id, num
 
 SEED=$(echo $RANDOM$RANDOM)
 
-# new blocks generation
-${UPDATE_BLOCKS_SCRIPT} "${SEED}"
+# Generate new block. We invoke the ACTC docker to do this.
+wget actc/renewability/${UPDATE_BLOCKS_SCRIPT}/${SEED}
 
 if [ $? -ne 0 ]; then
     echo "ERROR while updating mobile blocks."
