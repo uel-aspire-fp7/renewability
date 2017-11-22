@@ -12,7 +12,7 @@ COPY modules/renewability /tmp/renewability
 RUN /tmp/renewability/build_server.sh /opt/renewability /opt/ASCL
 
 # Clean up
-RUN rm -rf /tmp
+RUN rm -rf /tmp/*
 
 # Slight hack: make sure mysql is running before we actually start renewability_manager
 ENTRYPOINT while ! nc -z mysql 3306; do sleep 1; done; /opt/renewability/renewability_manager >> /opt/online_backends/renewability/manager-out.log 2>&1
