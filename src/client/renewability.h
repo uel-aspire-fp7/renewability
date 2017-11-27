@@ -32,6 +32,8 @@ typedef struct {
     uint32_t timeout;
 } rn_renewblock;
 
+void renewabilityInit () __attribute__((constructor(105)));
+
 /* extern unbinder definition */
 extern void EraseMobileBlock (uint32_t index, bool code);
 extern void EraseAllMobileBlocks ();

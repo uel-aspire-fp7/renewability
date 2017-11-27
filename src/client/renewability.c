@@ -89,40 +89,24 @@ void* renewability_monitor(void* buffer) {
     }
 }
 
-/* Enables Renewability client support */
-pthread_mutex_t init_mutex;
-static int initialized = 0;
-
-bool renewabilityInit() {
+/*
+ * Enables Renewability client support.
+ * This function is called on application startup.
+ */
+void renewabilityInit() {
     int t_res;
-
-    pthread_mutex_lock(&init_mutex);
-
-    /* the channel is already open */
-    if (NULL != rn_ws_channel)
-    if (initialized) {
-        pthread_mutex_unlock(&init_mutex);
-        return true;
-    }
     
-    initialized = 1;
-
-    /* starts reneability thread */
+    /* start renewability thread */
     t_res = pthread_create(&monitor_thread, NULL, &renewability_monitor, NULL);
 
+#ifndef NDEBUG
     if (0 == t_res) {
         /* renewability thread is running */
-
-       pthread_mutex_unlock(&init_mutex);
-        return true;
+        lwsl_notice("RENEWABILITY THREAD SUCCESFULLY STARTED\n");
+    } else {
+        lwsl_notice("FAILED TO START RENEWABILITY THREAD\n");
     }
- 
-#ifndef NDEBUG
-    lwsl_notice("RENEWABILITY THREAD SPAWNED");
 #endif
- 
-    pthread_mutex_unlock(&init_mutex);
-    return false;
 }
 
 /* Disables Renewability client support */
