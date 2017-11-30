@@ -9,8 +9,8 @@ usage () {
     echo "  -a String, ASPIRE Application ID"
     echo "  -r String, Revision number as specified in revisions directory."
     echo "  -o Path, Path to the diversification script."
-    echo "  -f String, formatted revision validity range start (yyyy-mm-dd hh:mm:ss) (e.g. date +\"%Y-%m-%d %T\")"
-    echo "  -t String, formatted revision validity range end (yyyy-mm-dd hh:mm:ss) (e.g. date +\"%Y-%m-%d %T\")"
+    echo "  -f String, formatted revision validity range start (Unix time = seconds since epoch)"
+    echo "  -t String, formatted revision validity range end (Unix time = seconds since epoch)"
 
     exit 0;
 }
