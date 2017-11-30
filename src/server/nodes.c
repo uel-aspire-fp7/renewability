@@ -34,7 +34,8 @@ rn_manager_node* findActiveApplication(char application_id[AIDL]) {
             if (strcmp(application_id, conductor->application_id) == 0) {
                 return conductor;
             }
-        } while (NULL != conductor->next);
+            conductor = conductor->next;
+        } while (NULL != conductor);
     }
 
     return NULL;
@@ -86,6 +87,8 @@ bool removeActiveApplication(char application_id[AIDL]) {
 
         if (empty_list == 1)
             active_applications = NULL;
+            
+        return true;
     }
 
     return false;
