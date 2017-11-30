@@ -1,5 +1,47 @@
 #include "renewability_manager.h"
 
+typedef enum {ADD, REMOVE} to_do_type;
+
+typedef struct rn_manager_to_do {
+    char application_id[AIDL];            /* ASPIRE Application ID */
+    to_do_type type;                      /* Type of to_do item */
+    unsigned long time;                   /* Moment the request arrived */
+
+    struct rn_manager_to_do *next;
+} rn_manager_to_do;
+
+pthread_t accl_thread;
+pthread_mutex_t to_do_mutex;
+
+/* linked list to track requests received during main renewability loop  */
+rn_manager_to_do* to_do_applications = NULL;
+
+/**
+ * Adds an element to the to do list.
+ * Important: Assumes the caller has the lock for the to_do_mutex.
+ */
+void add_element_to_to_do_list(char* application_id, to_do_type type, unsigned long time_stamp){
+    /* initialize new element of the list */
+    rn_manager_to_do* new_app_to_close = (rn_manager_to_do*)malloc(sizeof(rn_manager_to_do));
+    memset(new_app_to_close->application_id, 0, AIDL);
+    strcpy(new_app_to_close->application_id, application_id);
+    new_app_to_close->next = NULL;
+    new_app_to_close->time = time_stamp;
+    new_app_to_close->type = type;
+
+    /* find tail of list and put new element there */
+    rn_manager_to_do* iterator = to_do_applications;
+    if (NULL != iterator) {
+        while (NULL != iterator->next) {
+            iterator = iterator->next;
+        }
+
+        iterator->next = new_app_to_close;
+    } else {
+        to_do_applications = new_app_to_close;
+    }
+}
+
 /**
  * CTRL+C signal manager
  */
@@ -81,6 +123,7 @@ bool generateNewRevision(char application_id[AIDL], char revision_number[RN_REVI
     {
         /* revision has already been generated. */
         closedir(dir);
+        renewabilityLog("Renew script not executed as the revision already exists", RN_DEBUG);
 
         return true;
     }
@@ -113,8 +156,6 @@ int asclWebSocketDispatcherMessage(
         size_t*			response_length,
         char*			response) {
 
-    rn_manager_node* newNode = NULL;
-
     if (RN_RENEWABILITY != technique_id)
         return ASCL_SUCCESS;
 
@@ -122,14 +163,18 @@ int asclWebSocketDispatcherMessage(
         case ASCL_WS_MESSAGE_OPEN:
             renewabilityLog("BACKEND: Connection opened (TID: %d, AID: %s)\n", RN_DEBUG, technique_id, application_id);
 
-            if (!isApplicationActive(application_id)) {
-                newNode = addActiveApplication(application_id);
-                newNode->last_ack_request = 0;
-                newNode->last_ack_response = 0;
-                newNode->last_update_time = newNode->connection_time = (unsigned long)time(NULL);
+            pthread_mutex_lock(&to_do_mutex);
 
-                renewabilityLog ("Application %s has been added to currently served list (%s)", RN_DEBUG, application_id, newNode->application_id);
-            }
+            /**
+              * Place the apps that have to be added in the to do list. The other thread will add them.
+              * We don't want to add them here as we want to do the adds and removes in the right order.
+              * The removes however have to happen in the other thread as that one might be iterating over it.
+              **/
+            renewabilityLog("Request for adding application %s received.", RN_DEBUG, application_id);
+
+            add_element_to_to_do_list(application_id, ADD, (unsigned long)time(NULL));
+
+            pthread_mutex_unlock(&to_do_mutex);
 
             break;
         case ASCL_WS_MESSAGE_SEND:
@@ -150,9 +195,17 @@ int asclWebSocketDispatcherMessage(
         case ASCL_WS_MESSAGE_CLOSE:
             renewabilityLog("BACKEND: Connection closed (TID: %d, AID: %s)\n", RN_DEBUG, technique_id, application_id);
 
-            if (isApplicationActive(application_id)) {
-                removeActiveApplication(application_id);
-            }
+            pthread_mutex_lock(&to_do_mutex);
+
+            /**
+              * Place the apps that need to be closed in the to do list. The other thread will close them.
+              * We can't remove the app from the linked list here, as the other thread might be iterating over it.
+              **/
+            renewabilityLog("Request for removing application %s received.", RN_DEBUG, application_id);
+
+            add_element_to_to_do_list(application_id, REMOVE, (unsigned long)time(NULL));
+
+            pthread_mutex_unlock(&to_do_mutex);
 
             break;
     }
@@ -253,6 +306,51 @@ bool queryClient (rn_manager_node* application, struct lws_context* ws_context) 
  * when an upgrade is needed
  */
 bool checkPoliciesAndQueryClients(MYSQL *con, struct lws_context* ws_context) {
+    /**
+      * Handle the items in the to do list.
+      * These were added by the ACCL callback thread since the last time this function was called.
+      **/
+    pthread_mutex_lock(&to_do_mutex);
+
+    rn_manager_node* newNode = NULL;
+    while(to_do_applications != NULL){
+        rn_manager_to_do* next = to_do_applications->next;
+
+        switch(to_do_applications->type){
+        case ADD:
+            if (!isApplicationActive(to_do_applications->application_id)) {
+                newNode = addActiveApplication(to_do_applications->application_id);
+                newNode->last_ack_request = 0;
+                newNode->last_ack_response = 0;
+                newNode->last_update_time = newNode->connection_time = to_do_applications->time;
+
+                renewabilityLog("Application %s has been added to currently served list (%s)",
+                        RN_DEBUG, to_do_applications->application_id, newNode->application_id);
+            } else {
+                renewabilityLog("Application %s is already active, so cannot be added.", RN_DEBUG, to_do_applications->application_id);
+            }
+
+            break;
+        case REMOVE:
+            if (isApplicationActive(to_do_applications->application_id)) {
+                renewabilityLog("Removing application %s.", RN_DEBUG, to_do_applications->application_id);
+
+                removeActiveApplication(to_do_applications->application_id);
+            } else {
+                renewabilityLog("Application %s is not active, so cannot be removed.", RN_DEBUG, to_do_applications->application_id);
+            }
+            break;
+        default:
+            renewabilityLog("Warning: Application %s appeared in the to do list with unknown type %d. Ignoring...",
+                    RN_ERROR, to_do_applications->application_id, (int) to_do_applications->type);
+        }
+
+        free(to_do_applications);
+        to_do_applications = next;
+    }
+
+    pthread_mutex_unlock(&to_do_mutex);
+
     renewability_policy* policy = NULL;
     rn_manager_node* app_iterator = getFirstActiveApplication();
     unsigned long last_update_time = 0, current_time = 0;
@@ -325,9 +423,28 @@ bool checkPoliciesAndQueryClients(MYSQL *con, struct lws_context* ws_context) {
         renewabilityLog("Application list is NULL", RN_DEBUG);
     }
 
-    sleep(1);
-
     return true;
+}
+
+/**
+ * Handle ACCL callbacks in separate thread.
+ * The argument is a void pointer to a lws_context struct.
+ */
+void* accl_service_thread(void* arg) {
+    struct lws_context* ws_context;
+
+    renewabilityLog("ACCL callback thread started.", RN_DEBUG);
+
+    ws_context = (struct lws_context*) arg;
+
+    while (force_exit == 0) {
+        // library service (read/write callbacks) routine
+        lws_service(ws_context, 1000);   // 1000ms timeout
+    }
+
+    asclWebSocketShutdown(ws_context);
+
+    return NULL;
 }
 
 /**
@@ -362,17 +479,25 @@ int main (int argc, char** argv) {
     /* websocket server initialization */
     ws_context = asclWebSocketInit (RN_RENEWABILITY);
 
+    pthread_mutex_init(&to_do_mutex, NULL);
+
     if (NULL != ws_context) {
+
+        if(pthread_create(&accl_thread, NULL, &accl_service_thread, ws_context) != 0){
+            renewabilityLog("Unable to start the ACCL callback thread.", RN_ERROR);
+
+            return 2;
+        }
+
         while (force_exit == 0) {
             checkPoliciesAndQueryClients(con, ws_context);
 
-            // library service (read/write callbacks) routine
-            lws_service(ws_context, 1000);   // 1000ms timeout
+            // no need to check for timeout every second
+            sleep(2);
         }
 
         renewabilityLog("Shutting down manager.", RN_DEBUG);
 
-        asclWebSocketShutdown(ws_context);
     } else {
 
         renewabilityLog("Unable to initialize WebSocket context.", RN_ERROR);

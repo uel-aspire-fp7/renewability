@@ -15,6 +15,7 @@
 #include <renewability.h>
 #include <sys/types.h>
 #include <dirent.h>
+#include <pthread.h>
 #include "nodes.h"
 
 #define RENEWABILITY_DB_HOST                "mysql"
